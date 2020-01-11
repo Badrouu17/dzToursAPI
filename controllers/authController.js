@@ -43,11 +43,6 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm
   });
 
-  if (process.env.NODE_ENV === 'production') {
-    const url = `${req.protocol}://${req.get('host')}/me`;
-    await new Email(newUser, url).sendWelcome();
-  }
-
   createSendToken(newUser, 201, req, res);
 });
 
