@@ -86,7 +86,7 @@ module.exports = class Email {
       text: htmlToText.fromString(html),
       html
     };
-    await mg.send(msg);
+    await mg.messages().send(msg);
   }
 
   async sendWelcome() {
