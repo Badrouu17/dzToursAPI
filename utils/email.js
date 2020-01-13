@@ -94,16 +94,9 @@ module.exports = class Email {
   }
 
   async sendPasswordReset() {
-    if (process.env.NODE_ENV === 'production') {
-      await this.sendGun(
-        'passwordReset',
-        'Your password reset token (valid for only 10 minutes)'
-      );
-    } else {
-      await this.send(
-        'passwordReset',
-        'Your password reset token (valid for only 10 minutes)'
-      );
-    }
+    await this.sendGun(
+      'passwordReset',
+      'Your password reset token (valid for only 10 minutes)'
+    );
   }
 };
