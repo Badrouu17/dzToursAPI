@@ -26,7 +26,13 @@ app.enable('trust proxy');
 
 // 1) GLOBAL MIDDLEWARES
 // Implement CORS
-app.use(cors({ credentials: true, origin: true }));
+app.use(
+  cors({
+    credentials: true,
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS'
+  })
+);
 // Access-Control-Allow-Origin *
 // api.natours.com, front-end natours.com
 // app.use(cors({
