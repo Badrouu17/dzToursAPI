@@ -3,12 +3,6 @@ const pug = require('pug');
 const htmlToText = require('html-to-text');
 const sgMail = require('@sendgrid/mail');
 
-const mailgun = require('mailgun-js');
-const mg = mailgun({
-  apiKey: process.env.MAILGUN_API,
-  domain: process.env.MAILGUN_DOMAIN
-});
-
 module.exports = class Email {
   constructor(user, url) {
     this.to = user.email;
@@ -72,29 +66,12 @@ module.exports = class Email {
     await sgMail.send(msg);
   }
 
-  async sendGun(template, subject) {
-    const html = pug.renderFile(`${__dirname}/../views/email/${template}.pug`, {
-      firstName: this.firstName,
-      url: this.url,
-      subject
-    });
-
-    const msg = {
-      to: this.to,
-      from: this.from,
-      subject: 'passwordReset',
-      text: htmlToText.fromString(html),
-      html
-    };
-    await mg.messages().send(msg);
-  }
-
   async sendWelcome() {
     await this.send('welcome', 'Welcome to the Natours Family!');
   }
 
   async sendPasswordReset() {
-    await this.sendGun(
+    await this.sendGrid(
       'passwordReset',
       'Your password reset token (valid for only 10 minutes)'
     );

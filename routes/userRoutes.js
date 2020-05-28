@@ -18,13 +18,15 @@ router.get('/isLogged', authController.isLoggedIn);
 
 router.patch('/updateMyPassword', authController.updatePassword);
 router.get('/me', userController.getMe, userController.getUser);
-router.patch(
-  '/updateMe',
-  userController.uploadUserPhoto,
-  userController.resizeUserPhoto,
-  userController.updateMe
-);
+router.patch('/updateMe', userController.updateMe);
 router.delete('/deleteMe', userController.deleteMe);
+
+router.post(
+  '/upload',
+  userController.photoUploader,
+  userController.photoUploaderToCloud,
+  userController.savePhotoInDb
+);
 
 router.use(authController.restrictTo('admin'));
 

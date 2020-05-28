@@ -11,6 +11,8 @@ const bodyParser = require('body-parser');
 const compression = require('compression');
 const cors = require('cors');
 
+const { cloudinaryConfig } = require('./cloudinary');
+
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
@@ -94,6 +96,8 @@ app.use(
 );
 
 app.use(compression());
+
+app.use('*', cloudinaryConfig);
 
 // Test middleware
 app.use((req, res, next) => {

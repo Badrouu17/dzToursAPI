@@ -1,48 +1,45 @@
-const multer = require('multer');
-const sharp = require('sharp');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const factory = require('./handlerFactory');
+const { multerUploads, dataUri } = require('./../utils/multer');
+const { uploader } = require('./../cloudinary');
+const photoResize = require('./../utils/sharp');
 
-// const multerStorage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, 'public/img/users');
-//   },
-//   filename: (req, file, cb) => {
-//     const ext = file.mimetype.split('/')[1];
-//     cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
-//   }
-// });
-const multerStorage = multer.memoryStorage();
+exports.photoUploader = multerUploads;
 
-const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image')) {
-    cb(null, true);
-  } else {
-    cb(new AppError('Not an image! Please upload only images.', 400), false);
+exports.photoUploaderToCloud = catchAsync(async (req, res, next) => {
+  if (req.file) {
+    const bufferAfterResize = await photoResize(req.file.buffer);
+
+    const file = dataUri(req.file.originalname, bufferAfterResize).content;
+
+    const results = await uploader.upload(file);
+    req.user.photo = results.url;
   }
-};
-
-const upload = multer({
-  storage: multerStorage,
-  fileFilter: multerFilter
+  next();
 });
 
-exports.uploadUserPhoto = upload.single('photo');
+exports.savePhotoInDb = catchAsync(async (req, res, next) => {
+  const doc = await User.findByIdAndUpdate(
+    req.user._id,
+    { photo: req.user.photo },
+    {
+      new: true,
+      runValidators: true
+    }
+  );
 
-exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
-  if (!req.file) return next();
+  if (!doc) {
+    return next(new AppError('No document found with that ID', 404));
+  }
 
-  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
-
-  await sharp(req.file.buffer)
-    .resize(500, 500)
-    .toFormat('jpeg')
-    .jpeg({ quality: 90 })
-    .toFile(`public/img/users/${req.file.filename}`);
-
-  next();
+  res.status(200).json({
+    messge: 'Your image has been uploded and saved successfully',
+    data: {
+      image: req.user.photo
+    }
+  });
 });
 
 const filterObj = (obj, ...allowedFields) => {
